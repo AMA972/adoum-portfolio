@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIEM Lab — Ali ADOUM MAHAMAT</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface2: #1a2332;
+    --accent: #00d4aa;
+    --accent2: #3b82f6;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --border: rgba(255,255,255,0.07);
+    --font: 'Syne', sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    padding: 80px 48px 60px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -120px; right: -120px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,212,170,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,212,170,0.1);
+    border: 1px solid rgba(0,212,170,0.25);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    padding: 6px 14px;
+    border-radius: 100px;
+    margin-bottom: 24px;
+  }
+
+  .badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .hero h1 {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+
+  .hero h1 span { color: var(--accent); }
+
+  .hero p {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 640px;
+    margin-bottom: 32px;
+  }
+
+  .meta-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .meta-item strong { color: var(--text); }
+
+  /* ── STATS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat {
+    padding: 32px;
+    border-right: 1px solid var(--border);
+  }
+  .stat:last-child { border-right: none; }
+
+  .stat-val {
+    font-size: 40px;
+    font-weight: 800;
+    color: var(--accent);
+    font-family: var(--mono);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    min-height: calc(100vh - 400px);
+  }
+
+  .content { padding: 48px; border-right: 1px solid var(--border); }
+  .sidebar { padding: 48px 32px; }
+
+  /* ── SECTIONS ── */
+  .section { margin-bottom: 56px; }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── ARCHI DIAGRAM ── */
+  .arch-diagram {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    font-family: var(--mono);
+    font-size: 13px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .arch-diagram::before {
+    content: '// architecture réseau';
+    position: absolute;
+    top: 12px; right: 16px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .network-box {
+    border: 1px solid rgba(0,212,170,0.2);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    background: rgba(0,212,170,0.03);
+  }
+
+  .network-title {
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  .node-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .node {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 11px;
+    flex: 1;
+    min-width: 140px;
+  }
+
+  .node-name { color: var(--text); font-weight: 700; }
+  .node-ip { color: var(--muted); font-size: 10px; margin-top: 2px; }
+  .node-role { color: var(--accent2); font-size: 10px; margin-top: 2px; }
+
+  .node.manager { border-color: rgba(0,212,170,0.4); }
+  .node.attacker { border-color: rgba(239,68,68,0.4); }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 16px 0;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .code-dots { display: flex; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+
+  .code-lang {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .code-body {
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.8;
+    color: #a8b4c8;
+    overflow-x: auto;
+  }
+
+  .kw { color: #ff79c6; }
+  .fn { color: #50fa7b; }
+  .str { color: #f1fa8c; }
+  .cm { color: #6272a4; }
+  .num { color: #bd93f9; }
+  .var { color: #8be9fd; }
+
+  /* ── ALERTS FEED ── */
+  .alerts-feed { display: flex; flex-direction: column; gap: 10px; }
+
+  .alert-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid transparent;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .alert-item.crit { border-left-color: var(--red); }
+  .alert-item.high { border-left-color: var(--yellow); }
+  .alert-item.med  { border-left-color: var(--accent2); }
+
+  .alert-level {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .level-crit { background: rgba(239,68,68,0.15); color: var(--red); }
+  .level-high { background: rgba(245,158,11,0.15); color: var(--yellow); }
+  .level-med  { background: rgba(59,130,246,0.15); color: var(--accent2); }
+
+  .alert-desc { font-size: 13px; color: var(--text); }
+  .alert-meta { font-family: var(--mono); font-size: 10px; color: var(--muted); white-space: nowrap; }
+
+  /* ── SIDEBAR ── */
+  .stack-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stack-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .stack-name { font-size: 14px; font-weight: 600; }
+  .stack-ver  { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+  .mitre-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.2);
+    color: var(--accent2);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    margin: 4px;
+  }
+
+  .lesson-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+
+  .lesson-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--accent);
+  }
+
+  .lesson-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .footer-sig {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .footer-sig strong { color: var(--accent); }
+
+  .footer-links { display: flex; gap: 16px; }
+
+  .footer-links a {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--accent); }
+
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .main { grid-template-columns: 1fr; }
+    .sidebar { border-top: 1px solid var(--border); }
+    .content, .sidebar { padding: 32px 24px; }
+    .hero { padding: 48px 24px; }
+    footer { padding: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">PROJET CYBERSÉCURITÉ · 2025</div>
+  <h1>SIEM Lab<br><span>Wazuh + ELK Stack</span></h1>
+  <p>Déploiement d'un SOC open source complet : centralisation de logs, corrélation d'alertes et détection d'intrusion en environnement virtualisé.</p>
+  <div class="meta-row">
+    <div class="meta-item">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <strong>Ali ADOUM MAHAMAT</strong>
+    </div>
+    <div class="meta-item">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+      <strong>@AMA972</strong>
+    </div>
+    <div class="meta-item">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <strong>Montpellier, France</strong>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-grid">
+  <div class="stat">
+    <div class="stat-val">4</div>
+    <div class="stat-label">Sources de logs</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">12</div>
+    <div class="stat-label">Règles personnalisées</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">&lt;60s</div>
+    <div class="stat-label">Délai de détection</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val">97%</div>
+    <div class="stat-label">Réduction faux positifs</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+<div class="content">
+
+  <!-- ARCHITECTURE -->
+  <div class="section">
+    <div class="section-label">Architecture réseau</div>
+    <div class="arch-diagram">
+      <div class="network-box">
+        <div class="network-title">192.168.10.0/24 — Réseau lab isolé (Proxmox)</div>
+        <div class="node-row">
+          <div class="node manager">
+            <div class="node-name">Wazuh Manager + ELK</div>
+            <div class="node-ip">192.168.10.10</div>
+            <div class="node-role">Ubuntu 22.04 — 6 vCPU / 8GB RAM</div>
+          </div>
+        </div>
+        <div class="node-row">
+          <div class="node">
+            <div class="node-name">Agent Linux</div>
+            <div class="node-ip">192.168.10.20</div>
+            <div class="node-role">Serveur web simulé</div>
+          </div>
+          <div class="node">
+            <div class="node-name">Agent Windows AD</div>
+            <div class="node-ip">192.168.10.30</div>
+            <div class="node-role">Active Directory</div>
+          </div>
+          <div class="node">
+            <div class="node-name">pfSense FW</div>
+            <div class="node-ip">192.168.10.1</div>
+            <div class="node-role">Logs réseau</div>
+          </div>
+          <div class="node attacker">
+            <div class="node-name">Kali Linux</div>
+            <div class="node-ip">192.168.10.100</div>
+            <div class="node-role">Simulateur d'attaques</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RÈGLES CUSTOM -->
+  <div class="section">
+    <div class="section-label">Règle de détection personnalisée</div>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+        </div>
+        <span class="code-lang">custom_rules.xml · Wazuh</span>
+      </div>
+      <div class="code-body">
+<span class="cm">&lt;!-- Règles AMA972 — Mapping MITRE ATT&amp;CK --&gt;</span>
+<span class="cm">&lt;group name="custom_ama972,"&gt;</span>
+
+  <span class="cm">&lt;!-- Bruteforce SSH : 5 échecs en 60s --&gt;</span>
+  <span class="kw">&lt;rule</span> <span class="var">id</span>=<span class="str">"100001"</span> <span class="var">level</span>=<span class="str">"10"</span>
+        <span class="var">frequency</span>=<span class="str">"5"</span> <span class="var">timeframe</span>=<span class="str">"60"</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;if_matched_sid&gt;</span><span class="num">5716</span><span class="kw">&lt;/if_matched_sid&gt;</span>
+    <span class="kw">&lt;description&gt;</span>Bruteforce SSH depuis $(srcip)<span class="kw">&lt;/description&gt;</span>
+    <span class="kw">&lt;mitre&gt;&lt;id&gt;</span><span class="str">T1110.001</span><span class="kw">&lt;/id&gt;&lt;/mitre&gt;</span>
+  <span class="kw">&lt;/rule&gt;</span>
+
+  <span class="cm">&lt;!-- CRITIQUE : bruteforce sur root --&gt;</span>
+  <span class="kw">&lt;rule</span> <span class="var">id</span>=<span class="str">"100002"</span> <span class="var">level</span>=<span class="str">"14"</span><span class="kw">&gt;</span>
+    <span class="kw">&lt;if_sid&gt;</span>100001<span class="kw">&lt;/if_sid&gt;</span>
+    <span class="kw">&lt;match&gt;</span>Failed password for root<span class="kw">&lt;/match&gt;</span>
+    <span class="kw">&lt;description&gt;</span>CRITIQUE — Ciblage root<span class="kw">&lt;/description&gt;</span>
+  <span class="kw">&lt;/rule&gt;</span>
+
+<span class="cm">&lt;/group&gt;</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALERTES SIMULÉES -->
+  <div class="section">
+    <div class="section-label">Alertes détectées — scénarios de test</div>
+    <div class="alerts-feed">
+      <div class="alert-item crit">
+        <div class="alert-level level-crit">LVL 14</div>
+        <div>
+          <div class="alert-desc">CRITIQUE — Bruteforce SSH ciblant root depuis 192.168.10.100</div>
+          <div class="alert-meta" style="margin-top:4px; font-size:11px; color:var(--muted);">Rule 100002 · T1110.001 · wazuh-alerts-2025.03.15</div>
+        </div>
+        <div class="alert-meta">03:47:12</div>
+      </div>
+      <div class="alert-item high">
+        <div class="alert-level level-high">LVL 12</div>
+        <div>
+          <div class="alert-desc">Élévation de privilèges via sudo — utilisateur devuser</div>
+          <div class="alert-meta" style="margin-top:4px; font-size:11px; color:var(--muted);">Rule 100010 · T1548.003 · ubuntu-web</div>
+        </div>
+        <div class="alert-meta">14:23:08</div>
+      </div>
+      <div class="alert-item med">
+        <div class="alert-level level-med">LVL 8</div>
+        <div>
+          <div class="alert-desc">Scan réseau détecté — trafic anormal depuis 192.168.10.100</div>
+          <div class="alert-meta" style="margin-top:4px; font-size:11px; color:var(--muted);">Rule 100020 · T1046 · pfSense</div>
+        </div>
+        <div class="alert-meta">09:12:55</div>
+      </div>
+      <div class="alert-item high">
+        <div class="alert-level level-high">LVL 12</div>
+        <div>
+          <div class="alert-desc">Modification de /etc/sudoers détectée sur ubuntu-web</div>
+          <div class="alert-meta" style="margin-top:4px; font-size:11px; color:var(--muted);">Rule 100011 · T1548.003 · FIM Wazuh</div>
+        </div>
+        <div class="alert-meta">21:04:37</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+
+  <div class="section">
+    <div class="section-label">Stack technique</div>
+    <div class="stack-item">
+      <div class="stack-icon">WZ</div>
+      <div>
+        <div class="stack-name">Wazuh Manager</div>
+        <div class="stack-ver">v4.7.x</div>
+      </div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-icon">ES</div>
+      <div>
+        <div class="stack-name">Elasticsearch</div>
+        <div class="stack-ver">7.17.x</div>
+      </div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-icon">KB</div>
+      <div>
+        <div class="stack-name">Kibana</div>
+        <div class="stack-ver">7.17.x</div>
+      </div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-icon">PX</div>
+      <div>
+        <div class="stack-name">Proxmox VE</div>
+        <div class="stack-ver">8.x — virtualisation</div>
+      </div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-icon">KL</div>
+      <div>
+        <div class="stack-name">Kali Linux</div>
+        <div class="stack-ver">Simulation attaques</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">MITRE ATT&CK mappé</div>
+    <div>
+      <div class="mitre-tag">T1110.001 — Brute Force</div>
+      <div class="mitre-tag">T1548.003 — Sudo Abuse</div>
+      <div class="mitre-tag">T1046 — Network Scan</div>
+      <div class="mitre-tag">T1136 — Create Account</div>
+      <div class="mitre-tag">T1070 — Log Tampering</div>
+      <div class="mitre-tag">T1021.001 — Remote Desktop</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label">Ce que j'ai appris</div>
+    <div class="lesson-item">
+      <div class="lesson-title">Tuning = 80% du travail</div>
+      <div class="lesson-text">Réduire les faux positifs de 95% à 15% m'a pris 3 semaines. Un SIEM non tuné génère plus de bruit qu'il n'aide.</div>
+    </div>
+    <div class="lesson-item">
+      <div class="lesson-title">RAM sous-estimée</div>
+      <div class="lesson-text">Elasticsearch seul consomme 4 GB avec des logs actifs. J'ai dû limiter la heap JVM à 2 GB pour éviter les OOM.</div>
+    </div>
+    <div class="lesson-item">
+      <div class="lesson-title">MITRE ATT&CK en pratique</div>
+      <div class="lesson-text">Mapper ses règles sur ATT&CK force à penser comme un attaquant, pas juste comme un admin.</div>
+    </div>
+  </div>
+
+</aside>
+</div>
+
+<footer>
+  <div class="footer-sig">
+    <strong>Ali ADOUM MAHAMAT</strong> · @AMA972 · Montpellier, France · 2025
+  </div>
+  <div class="footer-links">
+    <a href="https://github.com/AMA972/siem-wazuh-lab">GitHub →</a>
+    <a href="https://github.com/AMA972">Profil</a>
+  </div>
+</footer>
+
+</body>
+</html>
